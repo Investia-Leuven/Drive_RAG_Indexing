@@ -108,8 +108,8 @@ def _gemini_post(model: str, method: str, payload: Dict[str, Any]) -> Dict[str, 
     raise RuntimeError(f"Gemini call failed. Last response: {last_text}")
 
 
-# Main request handler for chat endpoint
-def handler(request):
+# Main request handler for chat endpoint (used by both Flask and Vercel serverless)
+def handle_request(request):
     if request.method != "POST":
         return {
             "statusCode": 405,
@@ -318,3 +318,60 @@ Question:
     if not parts or "text" not in parts[0]:
         raise RuntimeError("Gemini response missing text in first candidate")
     return parts[0]["text"]
+
+
+# Vercel serverless: export handler class so /api/chat is served on Vercel
+from http.server import BaseHTTPRequestHandler
+
+
+class handler(BaseHTTPRequestHandler):
+    def _cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors_headers()
+        self.end_headers()
+
+    def do_POST(self):
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+            raw = self.rfile.read(content_length) if content_length else b""
+            body_data = json.loads(raw.decode("utf-8")) if raw else {}
+        except Exception:
+            body_data = {}
+
+        class Req:
+            method = "POST"
+            body = body_data
+
+        try:
+            out = handle_request(Req)
+        except Exception as e:
+            out = {
+                "statusCode": 500,
+                "body": json.dumps({
+                    "error": "The server ran into a problem while handling your question.",
+                    "detail": str(e),
+                }),
+            }
+            if "429" in str(e) or "quota" in str(e).lower() or "RESOURCE_EXHAUSTED" in str(e):
+                out["body"] = json.dumps({
+                    "error": "Gemini API rate limit reached.",
+                    "detail": "Wait a minute and try again, or add GEMINI_API_KEY_2 in env.",
+                })
+
+        status = out.get("statusCode", 500)
+        resp_body = out.get("body", "")
+        if isinstance(resp_body, dict):
+            resp_body = json.dumps(resp_body)
+        if not isinstance(resp_body, str):
+            resp_body = str(resp_body)
+
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self._cors_headers()
+        self.end_headers()
+        self.wfile.write(resp_body.encode("utf-8"))

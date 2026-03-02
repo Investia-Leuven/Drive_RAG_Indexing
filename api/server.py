@@ -21,7 +21,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-from api.chat import handler
+from api.chat import handle_request
 
 app = Flask(__name__)
 
@@ -62,7 +62,7 @@ def chat():
             method = request.method
             body = request.get_json(silent=True) or request.get_data(as_text=True) or "{}"
 
-        out = handler(Req)
+        out = handle_request(Req)
         status = out.get("statusCode", 500)
         headers = {**dict(out.get("headers") or {}), **CORS_HEADERS}
         body = out.get("body", "")
