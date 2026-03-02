@@ -96,21 +96,40 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100">
+    <div className="flex flex-col h-screen bg-white text-slate-800">
       {/* Header */}
-      <header className="flex items-center justify-between shrink-0 px-4 py-3 border-b border-slate-800 bg-slate-900/80">
-        <h1
-          className="text-xl font-semibold tracking-tight bg-clip-text text-transparent"
-          style={{
-            backgroundImage: 'linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #34d399 100%)',
+      <header className="relative flex items-center justify-between shrink-0 px-12 py-3 border-b border-slate-200 bg-white">
+        <img
+          src="/lupus-logo.png"
+          alt=""
+          className="h-16 w-auto object-contain"
+          onError={(e) => {
+            e.target.onerror = null
+            e.target.src = '/logo.png'
           }}
-        >
-          Investia RAG
-        </h1>
+        />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5">
+          <h1
+            className="text-3xl font-semibold tracking-tight bg-clip-text text-transparent"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 50%, #10b981 100%)',
+            }}
+          >
+            Lupus
+          </h1>
+          <span
+            className="text-lg font-medium tracking-tight bg-clip-text text-transparent"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, #8b5cf6 0%, #3b82f6 50%, #10b981 100%)',
+            }}
+          >
+            Investia RAG
+          </span>
+        </div>
         <img
           src="/logo.png"
           alt="Club logo"
-          className="h-10 w-auto object-contain"
+          className="h-16 w-auto object-contain"
           onError={(e) => {
             e.target.style.display = 'none'
           }}
@@ -118,7 +137,7 @@ export default function App() {
       </header>
 
       {/* Messages */}
-      <main className="flex-1 overflow-y-auto p-4 space-y-4">
+      <main className="flex-1 overflow-y-auto px-12 py-4 space-y-4">
         {messages.length === 0 && (
           <p className="text-slate-500 text-center text-sm py-8">
             Ask a question about your Drive documents. Choose Context only, Hybrid, or General below.
@@ -132,10 +151,10 @@ export default function App() {
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                 msg.role === 'user'
-                  ? 'bg-violet-600/90 text-white'
+                  ? 'bg-violet-600 text-white'
                   : msg.error
-                    ? 'bg-red-900/30 text-red-200 border border-red-800/50'
-                    : 'bg-slate-800/90 text-slate-100 border border-slate-700/50'
+                    ? 'bg-red-50 text-red-800 border border-red-200'
+                    : 'bg-slate-100 text-slate-800 border border-slate-200'
               }`}
             >
               {msg.error ? (
@@ -143,12 +162,12 @@ export default function App() {
                   <p className="font-medium">What happened</p>
                   <p>{msg.errorSummary ?? msg.error ?? 'Something went wrong.'}</p>
                   {msg.errorDetail && (
-                    <p className="text-red-300/90 text-xs mt-1.5">
+                    <p className="text-red-600 text-xs mt-1.5">
                       Technical detail: {msg.errorDetail}
                     </p>
                   )}
                   {msg.errorHint && (
-                    <p className="text-amber-200/90 text-xs mt-1">
+                    <p className="text-amber-800 text-xs mt-1">
                       What you can do:{msg.errorHint}
                     </p>
                   )}
@@ -157,9 +176,9 @@ export default function App() {
                 <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
               )}
               {msg.sources?.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-slate-600/50">
-                  <p className="text-xs text-slate-400 mb-1">Sources:</p>
-                  <ul className="text-xs text-slate-300 space-y-0.5">
+                <div className="mt-2 pt-2 border-t border-slate-200">
+                  <p className="text-xs text-slate-500 mb-1">Sources:</p>
+                  <ul className="text-xs text-slate-600 space-y-0.5">
                     {msg.sources.slice(0, 3).map((s, j) => (
                       <li key={j}>
                         {s.title || s.doc_id}
@@ -168,7 +187,7 @@ export default function App() {
                             href={s.drive_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="ml-1 text-violet-300 hover:underline"
+                            className="ml-1 text-violet-600 hover:underline"
                           >
                             Link
                           </a>
@@ -183,8 +202,8 @@ export default function App() {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="rounded-2xl px-4 py-2.5 bg-slate-800/90 border border-slate-700/50">
-              <span className="text-slate-400 text-sm">Thinking…</span>
+            <div className="rounded-2xl px-4 py-2.5 bg-slate-100 border border-slate-200">
+              <span className="text-slate-500 text-sm">Thinking…</span>
             </div>
           </div>
         )}
@@ -193,13 +212,13 @@ export default function App() {
 
       {/* Error banner */}
       {error && (
-        <div className="shrink-0 px-4 py-2 bg-red-900/20 border-t border-red-800/50 text-red-300 text-sm">
+        <div className="shrink-0 px-12 py-2 bg-red-50 border-t border-red-200 text-red-700 text-sm">
           {error}
         </div>
       )}
 
       {/* Input area */}
-      <footer className="shrink-0 border-t border-slate-800 bg-slate-900/80 p-4">
+      <footer className="shrink-0 border-t border-slate-200 bg-slate-50 px-12 pt-4 pb-8">
         <div className="flex flex-wrap items-center gap-2 mb-3">
           {MODES.map((m) => (
             <button
@@ -209,7 +228,7 @@ export default function App() {
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 mode === m.value
                   ? 'bg-violet-600 text-white'
-                  : 'bg-slate-700/80 text-slate-300 hover:bg-slate-600/80'
+                  : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
               }`}
             >
               {m.label}
@@ -222,7 +241,7 @@ export default function App() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask something..."
-            className="flex-1 rounded-xl border border-slate-600 bg-slate-800/90 px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500"
+            className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500"
             disabled={loading}
           />
           <button
